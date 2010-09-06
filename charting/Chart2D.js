@@ -764,7 +764,7 @@ dojox.charting.__Chart2DCtorArgs = function(margins, stroke, fill, delayInMs){
 			// assumption: we don't have stacked axes yet
 			var offsets = this.offsets = { l: 0, r: 0, t: 0, b: 0 };
 			df.forIn(this.axes, function(axis){
-				df.forIn(axis.getOffsets(), function(o, i){ offsets[i] += o; });
+				df.forIn(axis.getOffsets(), function(o, i){ offsets[i] = Math.max(offsets[i], o); });
 			});
 			// add margins
 			df.forIn(this.margins, function(o, i){ offsets[i] += o; });
