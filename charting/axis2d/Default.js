@@ -241,10 +241,10 @@ dojo.require("dojox.lang.utils");
 					labelWidth = this._groupLabelWidth(this.labels, taFont);
 				}else{
 					labelWidth = this._groupLabelWidth([
-						gl(ma.start, ma.prec, o),
-						gl(ma.start + ma.count * ma.tick, ma.prec, o),
-						gl(mi.start, mi.prec, o),
-						gl(mi.start + mi.count * mi.tick, mi.prec, o)
+						o.majorLabels ? gl(ma.start, ma.prec, o) : "",
+						o.majorLabels ? gl(ma.start + ma.count * ma.tick, ma.prec, o) : "",
+						o.minorLabels ? gl(mi.start, mi.prec, o) : "",
+						o.minorLabels ? gl(mi.start + mi.count * mi.tick, mi.prec, o) : ""
 					], taFont);
 				}
 				if(this.vertical){
