@@ -786,6 +786,11 @@ dojox.charting.__Chart2DCtorArgs = function(margins, stroke, fill, delayInMs){
 			//		chart has been changed.
 			//	returns: dojox.charting.Chart2D
 			//		A reference to the current chart for functional chaining.
+			if(this._delayedRenderHandle){
+				clearTimeout(this._delayedRenderHandle);
+				this._delayedRenderHandle = null;
+			}
+
 			if(this.theme){
 				this.theme.clear();
 			}
@@ -915,22 +920,20 @@ dojox.charting.__Chart2DCtorArgs = function(margins, stroke, fill, delayInMs){
 
 			return this;	//	dojox.charting.Chart2D
 		},
-		delayedRender: function(){
+		delayedRender: function(force){
 			//	summary:
 			//		Delayed render, which is used to collect multiple updates
 			//		within a delayInMs time window.
+			//	force: boolean
+			//		Force a pending render to execute immediately. No action if
+			//		a render is not pending.
 			//	returns: dojox.charting.Chart2D
 			//		A reference to the current chart for functional chaining.
 
 			if(!this._delayedRenderHandle){
-				this._delayedRenderHandle = setTimeout(
-					dojo.hitch(this, function(){
-						clearTimeout(this._delayedRenderHandle);
-						this._delayedRenderHandle = null;
-						this.render();
-					}),
-					this.delayInMs
-				);
+				this._delayedRenderHandle = setTimeout(dojo.hitch(this, this.render), this.delayInMs);
+			}else if(this._delayedRenderHandle && force){
+				this.render();
 			}
 
 			return this;	//	dojox.charting.Chart2D
