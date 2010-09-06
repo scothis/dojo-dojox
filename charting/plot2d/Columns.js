@@ -11,7 +11,8 @@ dojo.require("dojox.lang.functional.reversed");
 (function(){
 	var df = dojox.lang.functional, du = dojox.lang.utils,
 		dc = dojox.charting.plot2d.common,
-		purgeGroup = df.lambda("item.purgeGroup()");
+		purgeGroup = df.lambda("item.purgeGroup()"),
+		transparent = dojo.Color.named.transparent;
 
 	dojo.declare("dojox.charting.plot2d.Columns", dojox.charting.plot2d.Base, {
 		//	summary:
@@ -25,6 +26,7 @@ dojo.require("dojox.lang.functional.reversed");
 		optionalParams: {
 			minBarSize:	1,	// minimal column width in pixels
 			maxBarSize:	1,	// maximal column width in pixels
+			fullMask:	false,
 			// theme component
 			stroke:		{},
 			outline:	{},
@@ -120,16 +122,23 @@ dojo.require("dojox.lang.functional.reversed");
 							var specialFill = this._plotFill(finalTheme.series.fill, dim, offsets);
 							specialFill = this._shapeFill(specialFill, rect);
 							var shape = s.createRect(rect).setFill(specialFill).setStroke(finalTheme.series.stroke);
+							var rectMask = {
+								x: rect.x, width: rect.width,
+								y: offsets.t,
+								height: dim.height - offsets.t - offsets.b
+							};
+							var mask = this.opt.fullMask ? s.createRect(rectMask).setFill(transparent).setStroke(transparent) : null;
 							run.dyn.fill   = shape.getFill();
 							run.dyn.stroke = shape.getStroke();
 							if(events){
 								var o = {
-									element: "column",
-									index:   j,
-									run:     run,
-									shape:   shape,
-									x:       j + 0.5,
-									y:       v
+									element:   "column",
+									index:     j,
+									run:       run,
+									shape:     shape,
+									eventMask: mask,
+									x:         j + 0.5,
+									y:         v
 								};
 								this._connectEvents(o);
 								eventSeries[j] = o;

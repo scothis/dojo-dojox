@@ -18,13 +18,19 @@ dojo.declare("dojox.charting.plot2d.__BarCtorArgs", dojox.charting.plot2d.__Defa
 
 	//	maxBarSize: Number?
 	//		The maximum size for a bar in pixels.  Default is 1.
-	maxBarSize: 1
+	maxBarSize: 1,
+
+	//	fullEventMask: Boolean?
+	//		Whether or not to extend the event mask for the bar to cover the
+	//		full potential height of the bar.  Default is false.
+	fullMask: false
 });
 =====*/
 (function(){
 	var df = dojox.lang.functional, du = dojox.lang.utils,
 		dc = dojox.charting.plot2d.common,
-		purgeGroup = df.lambda("item.purgeGroup()");
+		purgeGroup = df.lambda("item.purgeGroup()"),
+		transparent = dojo.Color.named.transparent;
 
 	dojo.declare("dojox.charting.plot2d.Bars", dojox.charting.plot2d.Base, {
 		//	summary:
@@ -38,6 +44,7 @@ dojo.declare("dojox.charting.plot2d.__BarCtorArgs", dojox.charting.plot2d.__Defa
 		optionalParams: {
 			minBarSize:	1,	// minimal bar width in pixels
 			maxBarSize:	1,	// maximal bar width in pixels
+			fullMask:	false,
 			// theme component
 			stroke:		{},
 			outline:	{},
@@ -135,16 +142,22 @@ dojo.declare("dojox.charting.plot2d.__BarCtorArgs", dojox.charting.plot2d.__Defa
 							var specialFill = this._plotFill(finalTheme.series.fill, dim, offsets);
 							specialFill = this._shapeFill(specialFill, rect);
 							var shape = s.createRect(rect).setFill(specialFill).setStroke(finalTheme.series.stroke);
+							var rectMask = {
+								x: rect.x, y: rect.y, height: rect.height,
+								width: dim.width - offsets.l - offsets.r
+							};
+							var mask = this.opt.fullMask ? s.createRect(rectMask).setFill(transparent).setStroke(transparent) : null;
 							run.dyn.fill   = shape.getFill();
 							run.dyn.stroke = shape.getStroke();
 							if(events){
 								var o = {
-									element: "bar",
-									index:   j,
-									run:     run,
-									shape:   shape,
-									x:       v,
-									y:       j + 1.5
+									element:   "bar",
+									index:     j,
+									run:       run,
+									shape:     shape,
+									eventMask: mask,
+									x:         v,
+									y:         j + 1.5
 								};
 								this._connectEvents(o);
 								eventSeries[j] = o;
