@@ -33,6 +33,10 @@ dojo.declare("dojox.charting.plot2d.__DefaultCtorArgs", dojox.charting.plot2d.__
 	//		Whether or not to draw markers at data points on this plot. Default is false.
 	markers: false,
 
+	//	bridgeNulls: Boolean?
+	//		Whether or not to connect data segments across null values. Default is false.
+	bridgeNulls: false,
+
 	//	tension: Number|String?
 	//		Whether or not to apply 'tensioning' to the lines on this chart.
 	//		Options include a number, "X", "x", or "S"; if a number is used, the
@@ -168,7 +172,7 @@ dojo.declare("dojox.charting.plot2d.__DefaultCtorArgs", dojox.charting.plot2d.__
 				var s = this.group;
 				df.forEachRev(this.series, function(item){ item.cleanGroup(s); });
 			}
-			var t = this.chart.theme, stroke, outline, marker, events = this.events();
+			var t = this.chart.theme, stroke, outline, bstroke, marker, events = this.events();
 
 			for(var i = this.series.length - 1; i >= 0; --i){
 				var run = this.series[i];
@@ -185,41 +189,50 @@ dojo.declare("dojox.charting.plot2d.__DefaultCtorArgs", dojox.charting.plot2d.__
 				}
 
 				var theme = t.next(this.opt.areas ? "area" : "line", [this.opt, run], true),
-					s = run.group, rsegments = [], startindexes = [], rseg = null, lpoly,
+					s = run.group, rsegments = [], startindexes = [], rseg = null,
+					lpoly, lpolyFunc, prevLpoly, bpoly,
 					ht = this._hScaler.scaler.getTransformerFromModel(this._hScaler),
 					vt = this._vScaler.scaler.getTransformerFromModel(this._vScaler),
 					eventSeries = this._eventSeries[run.name] = new Array(run.data.length);
 
-                // split the run data into dense segments (each containing no nulls)
-                for(var j = 0; j < run.data.length; j++){
-                    if(run.data[j] != null){
-                        if(!rseg){
-                            rseg = [];
-                            startindexes.push(j);
-                            rsegments.push(rseg)
-                        }
-                        rseg.push(run.data[j]);
-                    }else{
-                        rseg = null;
-                    }
-                }
-
-                for(var seg = 0; seg < rsegments.length; seg++){
-					if(typeof rsegments[seg][0] == "number"){
-						lpoly = dojo.map(rsegments[seg], function(v, i){
-							return {
-								x: ht(i + startindexes[seg] + 1) + offsets.l,
-								y: dim.height - offsets.b - vt(v)
-							};
-						}, this);
+				// split the run data into dense segments (each containing no nulls)
+				for(var j = 0; j < run.data.length; j++){
+					if(run.data[j] != null){
+						if(!rseg){
+							rseg = [];
+							startindexes.push(j);
+							rsegments.push(rseg)
+						}
+						rseg.push(run.data[j]);
 					}else{
-						lpoly = dojo.map(rsegments[seg], function(v, i){
-							return {
-								x: ht(v.x) + offsets.l,
-								y: dim.height - offsets.b - vt(v.y)
-							};
-						}, this);
+						rseg = null;
 					}
+				}
+
+				if(rsegments[0] && typeof rsegments[0][0] == "number"){
+					lpolyFunc = function(v, i){
+						return {
+							x: ht(i + startindexes[seg] + 1) + offsets.l,
+							y: dim.height - offsets.b - vt(v)
+						};
+					};
+				}else{
+					lpolyFunc = function(v, i){
+						return {
+							x: ht(v.x) + offsets.l,
+							y: dim.height - offsets.b - vt(v.y)
+						};
+					};
+				}
+				for(var seg = 0; seg < rsegments.length; seg++){
+					lpoly = dojo.map(rsegments[seg], lpolyFunc, this);
+					if(seg != 0){
+						bpoly = [
+							prevLpoly[prevLpoly.length-1],
+							lpoly[0]
+						];
+					}
+					prevLpoly = lpoly;
 
 					var lpath = this.opt.tension ? dc.curve(lpoly, this.opt.tension) : "";
 
@@ -283,6 +296,10 @@ dojo.declare("dojox.charting.plot2d.__DefaultCtorArgs", dojox.charting.plot2d.__
 						} else {
 							run.dyn.stroke = s.createPolyline(lpoly).setStroke(stroke).getStroke();
 						}
+					}
+					if(this.opt.bridgeNulls && bpoly){
+						bstroke = dojo.delegate({ style: "dash" }, theme.series.stroke);
+						run.dyn.bstroke = s.createPolyline(bpoly).setStroke(bstroke).getStroke();
 					}
 					if(this.opt.markers){
 						frontMarkers = new Array(lpoly.length);
