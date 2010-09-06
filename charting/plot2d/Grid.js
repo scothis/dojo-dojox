@@ -208,7 +208,7 @@ dojo.declare("dojox.charting.plot2d.__GridCtorArgs", dojox.charting.plot2d.__Def
 							y1: y,
 							x2: dim.width - offsets.r,
 							y2: y
-						}).setStroke(ta.minorTick);
+						}).setStroke(ta.minorGridLine || ta.minorTick);
 						if(this.animate){
 							this._animateGrid(hMinorLine, "h", offsets.l, offsets.r + offsets.l - dim.width);
 						}
@@ -222,7 +222,7 @@ dojo.declare("dojox.charting.plot2d.__GridCtorArgs", dojox.charting.plot2d.__Def
 							y1: y,
 							x2: dim.width - offsets.r,
 							y2: y
-						}).setStroke(ta.majorTick);
+						}).setStroke(ta.majorGridLine || ta.majorTick);
 						if(this.animate){
 							this._animateGrid(hMajorLine, "h", offsets.l, offsets.r + offsets.l - dim.width);
 						}
@@ -244,7 +244,7 @@ dojo.declare("dojox.charting.plot2d.__GridCtorArgs", dojox.charting.plot2d.__Def
 							y1: offsets.t,
 							x2: x,
 							y2: dim.height - offsets.b
-						}).setStroke(ta.minorTick);
+						}).setStroke(ta.minorGridLine || ta.minorTick);
 						if(this.animate){
 							this._animateGrid(vMinorLine, "v", dim.height - offsets.b, dim.height - offsets.b - offsets.t);
 						}
@@ -258,7 +258,7 @@ dojo.declare("dojox.charting.plot2d.__GridCtorArgs", dojox.charting.plot2d.__Def
 							y1: offsets.t,
 							x2: x,
 							y2: dim.height - offsets.b
-						}).setStroke(ta.majorTick);
+						}).setStroke(ta.majorGridLine || ta.majorTick);
 						if(this.animate){
 							this._animateGrid(vMajorLine, "v", dim.height - offsets.b, dim.height - offsets.b - offsets.t);
 						}
